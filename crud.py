@@ -10,21 +10,23 @@ c.execute('''CREATE TABLE IF NOT EXISTS contact
              (id INTEGER PRIMARY KEY, name TEXT, email TEXT)''')
 conn.commit()
 
+error = 'Input Error'
+
 # Functions for CRUD operations
 def add_contact():
     name = name_entry.get()
     email = email_entry.get()
     if name and email:
-        if valideEmail(email) and valideNom(name):
+        if validate_email(email) and validate_name(name):
             c.execute("INSERT INTO contact (name, email) VALUES (?, ?)", (name, email))
             conn.commit()
             load_contacts()
             name_entry.delete(0, tk.END)
             email_entry.delete(0, tk.END)
         else:
-            messagebox.showwarning("Input Error", "Please enter valide name and email")
+            messagebox.showwarning(error, "Please enter valide name and email")
     else:
-        messagebox.showwarning("Input Error", "Please enter both name and email")
+        messagebox.showwarning(error, "Please enter both name and email")
 
 def update_contact():
     selected_item = contacts_listbox.curselection()
@@ -33,14 +35,14 @@ def update_contact():
         new_name = name_entry.get()
         new_email = email_entry.get()
         if new_name and new_email:
-            if valideEmail(new_email) and valideNom(new_name):
+            if validate_email(new_email) and validate_name(new_name):
                 c.execute("UPDATE contact SET name = ?, email = ? WHERE id = ?", (new_name, new_email, contact_id))
                 conn.commit()
                 load_contacts()
             else:
-                messagebox.showwarning("Input Error", "Please enter valide name and email")
+                messagebox.showwarning(error, "Please enter valide name and email")
         else:
-            messagebox.showwarning("Input Error", "Please enter both name and email")
+            messagebox.showwarning(error, "Please enter both name and email")
 
 def delete_contact():
     selected_item = contacts_listbox.curselection()
@@ -58,12 +60,15 @@ def load_contacts():
     for row in c.fetchall():
         contacts_listbox.insert(tk.END, row)
 
-def valideEmail(email):
-    exEmail = r"[a-zA-Z\._+-]+[0-9]*@[a-z]+\.[a-z]+"
-    return re.match(exEmail, email)
-def valideNom(nom):
-    exNom = r"[A-Z][a-zA-Z]{2,}"
-    return re.match(exNom, nom)
+def validate_email(email):
+    # Rename "exEmail" to match the regular expression ^[_a-z][a-z0-9_]*$
+    email_pattern = r"[a-zA-Z\._+-]+[\d]*@[a-z]+\.[a-z]+"  # Replaced [0-9] with \d
+    return re.match(email_pattern, email)
+
+def validate_name(name):
+    # Rename "exNom" to match the regular expression ^[_a-z][a-z0-9_]*$
+    name_pattern = r"[A-Z][a-zA-Z]{2,}"  # Retained this pattern as it matches names with a capital first letter
+    return re.match(name_pattern, name)
 
 # GUI setup
 root = tk.Tk()
